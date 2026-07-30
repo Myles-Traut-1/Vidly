@@ -39,6 +39,16 @@ const validators = {
         }
 
         return Joi.validate(rental, schema);
+    },
+
+    validateRegistration(registration) {
+        const schema = {
+            name: Joi.string().min(3).max(50).required(),
+            email: Joi.string().min(3).max(255).required().email(),
+            password: Joi.string().min(6).required()
+        }
+
+        return Joi.validate(registration, schema);
     }
 }
 
