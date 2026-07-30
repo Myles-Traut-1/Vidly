@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     const movie = await Movie.findById(req.params.id);
     if(!movie) {
-        res.status(404).send("Movie not found!");
+        return res.status(404).send("Movie not found!");
     }
     res.send(movie);
 });
@@ -27,12 +27,12 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { error } = validateMovie(req.body);
     if(error) {
-        res.status(400).send(error.details[0].message);
+        return res.status(400).send(error.details[0].message);
     }
 
     const genre = await Genre.findById(req.body.genreId);
     if(!genre) {
-        res.status(404).send("Genre not found!");
+        return res.status(404).send("Genre not found!");
     }
 
     const movie = new Movie({
@@ -58,12 +58,12 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { error } = validateMovieUpdate(req.body);
     if(error) {
-        res.status(400).send(error.details[0].message);
+        return res.status(400).send(error.details[0].message);
     }
 
     const genre = await Genre.findById(req.body.genreId);
     if(!genre) {
-        res.status(404).send("Genre not found!");
+        return res.status(404).send("Genre not found!");
     }
 
     const updatedMovie = await Movie.findByIdAndUpdate(req.params.id, {
@@ -77,7 +77,7 @@ router.put('/:id', async (req, res) => {
     }, {new: true});
 
     if(!updatedMovie) {
-        res.status(404).send("Movie not found!");
+        return res.status(404).send("Movie not found!");
     }
 
     res.send(updatedMovie);
@@ -88,7 +88,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
     if(!deletedMovie) {
-        res.status(404).send("Movie not found!");
+        return res.status(404).send("Movie not found!");
     }
 
     res.send(deletedMovie);

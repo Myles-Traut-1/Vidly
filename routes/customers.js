@@ -15,7 +15,7 @@ router.get('/:id', async (req, res) => {
         const customer = await Customer.findById(req.params.id);
 
         if(!customer) {
-            res.status(404).send("Customer not found!");
+            return res.status(404).send("Customer not found!");
         }
 
         res.send(customer);
@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
 
     const { error } = validateCustomer(req.body);
     if(error) {
-        res.status(400).send(error.details[0].message);
+        return res.status(400).send(error.details[0].message);
     }
 
     const customer = new Customer({
@@ -43,6 +43,7 @@ router.post('/', async (req, res) => {
         res.send(result);
     } catch(err) {
         console.error("Database Error...", err);
+        res.status(500).send("Database Error...", err);
     }
 });
 
@@ -50,7 +51,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { error } = validateCustomer(req.body);
     if(error) {
-        res.status(400).send(error.details[0].message);
+        return res.status(400).send(error.details[0].message);
     }
 
     try {
@@ -63,12 +64,13 @@ router.put('/:id', async (req, res) => {
         }, {new: true});
         
         if(!updatedCustomer) {
-            res.status(404).send("Customer not found!");
+            return res.status(404).send("Customer not found!");
         }
         res.send(updatedCustomer);
 
     } catch (err) {
         console.error("Database Error...", err);
+        res,status(500).send("Database Error...", err);
     }
 });
 
@@ -76,7 +78,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
     if(!deletedCustomer) {
-        res.status(404).send("Customer not found!");
+        return res.status(404).send("Customer not found!");
     }
     res.send(deletedCustomer); 
 });

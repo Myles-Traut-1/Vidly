@@ -13,11 +13,14 @@ const moviesSchema = new mongoose.Schema({
     },
     numberInStock: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0,
+        max: 50
     },
     dailyRentalRate: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0
     }
 });
 

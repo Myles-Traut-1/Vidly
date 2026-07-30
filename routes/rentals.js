@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     const rental = await Rental.findById(req.params.id);
     if(!rental) {
-        res.status(404).send("Rental not found!");
+        return res.status(404).send("Rental not found!");
     }
     res.send(rental);
 });
@@ -28,41 +28,92 @@ router.get('/:id', async (req, res) => {
 router.post('/' ,async (req, res) => {
     const { error } = validateRental(req.body);
     if(error) {
-        res.status(400).send(error.details[0].message);
+        return res.status(400).send(error.details[0].message);
     }
-    
+
     const customer = await Customer.findById(req.body.customerId);
     if(!customer) {
-        res.status(404).send("Customer not found!");
+        return res.status(404).send("Customer not found!");
     }
 
-    const movie = await Movie.findById(req.body.movieId);
-    if(!movie) {
-        res.status(404).send("Movie not found!");
-    }
+    /** Instead of the below we now use built in MongoDb's sessions to save to the db */
 
-    const rental = new Rental({
-        customer: customer,
-        movie: movie
-    });
+    // const movie = await Movie.findById(req.body.movieId);
+    // if(!movie) {
+    //     return res.status(404).send("Movie not found!");
+    // }
 
-    try{
-        // Update stock
-        rental.movie.numberInStock --;
-        rental.movie.dailyRentalRate ++;
-        
-        const result = await rental.save();
+    // if(movie.numberInStock === 0) {
+    //     return res.status(404).send("Movie not in stock");
+    // }
 
-        if(result) {
-            movie.numberInStock --;
-            movie.dailyRentalRate ++;
-            await movie.save();
+    // const rental = new Rental({
+    //     customer: {
+    //         _id: customer._id,
+    //         name: customer.name,
+    //         phone: customer.phone
+    //     },
+    //     movie: {
+    //         _id: movie._id,
+    //         title: movie.title,
+    //         dailyRentalRate: movie.dailyRentalRate
+    //     }
+    // });
+
+    // const result = await rental.save();
+    // movie.numberInStock --;
+    // await movie.save();
+
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        const updatedMovie = await Movie.findOneAndUpdate({
+            _id: req.body.movieId,
+            numberInStock: {$gt: 0} // Critical concurrency guard -> prevents RACE conditions
+        }, {
+            $inc: {numberInStock: -1}
+        }, {
+            new : true,
+            session
+        });
+
+        if(!updatedMovie) {
+            return res.status(404).send("Movie not foundor out of stock");
+            session.abortTransaction();
         }
 
-        res.send(result); 
+        // Now create the new rental object
+        const rental = new Rental({
+            customer: {
+                _id: customer._id,
+                name: customer.name,
+                phone: customer.phone
+            },
+            movie: {
+                _id: movie._id,
+                title: movie.title,
+                dailyRentalRate: movie.dailyRentalRate
+            }
+        });
+
+        // Pass the session to each database operation
+        const result = await rental.save({ session });
+
+        // Commit all changes to the database
+        await session.commitTransaction();
+        console.log("Transaction successful");
+
+        res.send(result);
     } catch (err) {
-        console.error("Database error..." , err);
-    }
+        // Abort and roll back all changes if an error happens
+        await session.abortTransaction();
+        res.status(500).send('Transaction failed, changes rolled back.', err)
+    } finally {
+        // Always close the session
+        session.endSession();
+    } 
 });
 
 /** ------ DELETE ROUTE ------ */
@@ -70,7 +121,7 @@ router.post('/' ,async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const deletedRental = await Rental.findByIdAndDelete(req.params.id);
     if(!deletedRental) {
-        res.status(404).send("Rental not found!");
+        return res.status(404).send("Rental not found!");
     }
 
     res.send(deletedRental);
