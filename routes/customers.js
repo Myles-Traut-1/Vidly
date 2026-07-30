@@ -39,8 +39,8 @@ router.post('/', async (req, res) => {
     });
 
     try {
-        const result = await customer.save();
-        res.send(result);
+        await customer.save();
+        res.send(customer);
     } catch(err) {
         console.error("Database Error...", err);
         res.status(500).send("Database Error...", err);

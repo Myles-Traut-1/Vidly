@@ -46,8 +46,8 @@ router.post('/', async (req, res) => {
     });
 
     try{
-        const result = await genre.save();
-        res.send(result);
+        await genre.save();
+        res.send(genre);
     } catch(err) {
         console.error("An error occured fetch data...", err);
     }

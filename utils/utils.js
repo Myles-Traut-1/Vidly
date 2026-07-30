@@ -1,4 +1,5 @@
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 
 const validators = {
 
@@ -23,7 +24,7 @@ const validators = {
     validateMovie(movie) {
         const schema = {
             title: Joi.string().min(3).required(),
-            genreId: Joi.string().required(), 
+            genreId: Joi.objectId().required(), 
             numberInStock: Joi.number().required(),
             dailyRentalRate: Joi.number().required()
         }
@@ -33,8 +34,8 @@ const validators = {
 
     validateRental(rental) {
         const schema = {
-            movieId: Joi.string().required(),
-            customerId: Joi.string().required()
+            movieId: Joi.objectId().required(),
+            customerId: Joi.objectId().required()
         }
 
         return Joi.validate(rental, schema);

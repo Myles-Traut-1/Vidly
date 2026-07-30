@@ -46,8 +46,8 @@ router.post('/', async (req, res) => {
     });
 
     try{
-        const result = await movie.save();
-        res.send(result);
+        await movie.save();
+        res.send(movie);
     } catch (err) {
         console.error("Database error...", err);
     }

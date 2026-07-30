@@ -75,13 +75,13 @@ router.post('/' ,async (req, res) => {
         }, {
             $inc: {numberInStock: -1}
         }, {
-            new : true,
+            returnDocument : "after",
             session
         });
 
         if(!updatedMovie) {
-            return res.status(404).send("Movie not foundor out of stock");
             session.abortTransaction();
+            return res.status(404).send("Movie not foundor out of stock");
         }
 
         // Now create the new rental object
@@ -92,20 +92,20 @@ router.post('/' ,async (req, res) => {
                 phone: customer.phone
             },
             movie: {
-                _id: movie._id,
-                title: movie.title,
-                dailyRentalRate: movie.dailyRentalRate
+                _id: updatedMovie._id,
+                title: updatedMovie.title,
+                dailyRentalRate: updatedMovie.dailyRentalRate
             }
         });
 
         // Pass the session to each database operation
-        const result = await rental.save({ session });
+        await rental.save({ session });
 
         // Commit all changes to the database
         await session.commitTransaction();
         console.log("Transaction successful");
 
-        res.send(result);
+        res.send(rental);
     } catch (err) {
         // Abort and roll back all changes if an error happens
         await session.abortTransaction();
