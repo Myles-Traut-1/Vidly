@@ -1,10 +1,26 @@
+
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const express = require("express");
 const { User } = require("../models/user");
 const { validateRegistration, validateLogin } = require("../utils/utils");
 
+const auth = require("../middleware/auth");
+
 const router = express.Router();
+
+/** ------ GET ROUTES ------*/
+
+router.get('/me', auth, async (req, res) => {
+    // THE USER_ID IS SET IN THE REQEST OBJECT INSIDE THE AUTH MIDDLEWARE.
+    const userId = req.user._id;
+
+    // NOW WE FIND THE USER OBJECT AND SEND IT TO THE CLIENT
+    const user = await User.findById(userId).select("-password"); // <- dont send the password
+    res.send(user);
+});
+
+/** ------ POST ROUTES ------ */
 
 router.post('/register', async (req, res) => {
     const { error } = validateRegistration(req.body);
@@ -26,7 +42,9 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    res.send(_.pick(user, ["_id", "name", "email"]));
+    const token = user.generateAuthToken();
+
+    res.header("x-auth-token", token).send(_.pick(user, ["_id", "name", "email"]));
 });
 
 router.post('/login', async (req, res) => {
@@ -44,8 +62,10 @@ router.post('/login', async (req, res) => {
     if(!validPassword) {
         return res.status(400).send("Invalid email or password");
     }
+
+    const token = user.generateAuthToken();
     
-    res.send(true);
+    res.send(token);
 });
 
 module.exports = router;

@@ -2,6 +2,10 @@ const express = require("express");
 const { Customer } = require("../models/customer");
 const { validateCustomer } = require("../utils/utils");
 
+/** ------ MIDDLEWARE ------ */
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
+
 const router = express.Router();
 
 /** -------- GET -------- */
@@ -25,7 +29,7 @@ router.get('/:id', async (req, res) => {
 });
 
 /** -------- POST -------- */
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
 
     const { error } = validateCustomer(req.body);
     if(error) {
@@ -48,7 +52,7 @@ router.post('/', async (req, res) => {
 });
 
 /** ------ PUT ------ */
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     const { error } = validateCustomer(req.body);
     if(error) {
         return res.status(400).send(error.details[0].message);
@@ -75,7 +79,7 @@ router.put('/:id', async (req, res) => {
 });
 
 /** ------ DELETE ------ */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth,admin], async (req, res) => {
     const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
     if(!deletedCustomer) {
         return res.status(404).send("Customer not found!");

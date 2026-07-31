@@ -1,3 +1,4 @@
+const config = require("config");
 const express = require("express");
 const helmet = require("helmet");
 const mongoose = require('mongoose');
@@ -8,6 +9,11 @@ const customers = require("./routes/customers");
 const movies = require("./routes/movies");
 const rentals = require("./routes/rentals");
 const auth = require("./routes/auth");
+
+if(!config.get("jwtPrivateKey")) {
+    console.log("FATAL ERROR... jwtPrivateKey not set");
+    process.exit(1);
+}
 
 // CONNECT TO DB
 mongoose.connect("mongodb://127.0.0.1:27017/Vidly?directConnection=true")

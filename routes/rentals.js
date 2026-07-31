@@ -6,6 +6,12 @@ const { Customer } = require("../models/customer");
 const { Movie } = require("../models/movies");
 const { validateRental } = require("../utils/utils");
 
+/** ------ MIDDLEWARE ------ */
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
+
+/** ------ ROUTER ------ */
+
 const router = express.Router();
 
 /** ------ GET ROUTES ------ */
@@ -25,7 +31,7 @@ router.get('/:id', async (req, res) => {
 
 /** ------ POST ROUTES ------ */
 
-router.post('/' ,async (req, res) => {
+router.post('/' , auth, async (req, res) => {
     const { error } = validateRental(req.body);
     if(error) {
         return res.status(400).send(error.details[0].message);
@@ -118,7 +124,7 @@ router.post('/' ,async (req, res) => {
 
 /** ------ DELETE ROUTE ------ */
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
     const deletedRental = await Rental.findByIdAndDelete(req.params.id);
     if(!deletedRental) {
         return res.status(404).send("Rental not found!");

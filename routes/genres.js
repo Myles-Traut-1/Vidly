@@ -2,10 +2,14 @@ const express = require("express");
 const { Genre } = require("../models/genre");
 const { validateGenre } = require("../utils/utils");
 
-// CREATE ROUTER
+/** ------ MIDDLEWARE ------*/ 
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
+
+/** ------ CREATE ROUTER ------ */
 const router = express.Router();
 
-// GET ROUTES
+/** ------ GET ROUTES ------ */
 router.get('/', async (req, res) => {
     try{
         const genres = await Genre.find();
@@ -34,8 +38,10 @@ router.get('/:id', async (req, res) => {
     
 });
 
-// POST ROUTES
-router.post('/', async (req, res) => {
+/** ------ POST ROUTES ------ */
+
+// YOU MAY ADD A MUIDDLEWARE FUNCTION AS AN OPTIONAL SECOND ARG: IN THIS CASE, AUTH
+router.post('/', auth, async (req, res) => {
     const { error } = validateGenre(req.body);
     if( error ) {
         return res.status(400).send(error.details[0].message);
@@ -80,8 +86,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-//DELETE ROUTES
-router.delete('/:id', async (req, res) => {
+/** ------ DELETE ROUTES ------ */
+router.delete('/:id', [auth, admin], async (req, res) => {
     try{
         const deletedGenre = await Genre.findByIdAndDelete(req.params.id);
         if(!deletedGenre) {
@@ -93,4 +99,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-module.exports = router
+module.exports = router;
