@@ -11,11 +11,11 @@ const router = express.Router();
 
 /** ------ GET ROUTES ------ */
 router.get('/', async (req, res) => {
-        const genres = await Genre.find();
-        if(genres.length === 0) {
-            return res.status(404).send("No Genres Found!");
-        }
-        res.send(genres);
+    const genres = await Genre.find();
+    if(genres.length === 0) {
+        return res.status(404).send("No Genres Found!");
+    }
+    res.send(genres);
 });
 
 router.get('/:id', async (req, res) => {

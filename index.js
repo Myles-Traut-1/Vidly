@@ -1,9 +1,11 @@
-const config = require("config");
 const express = require("express");
-const helmet = require("helmet");
-const mongoose = require('mongoose');
+const logger = require("./utils/logger");
 
-// MIDDLEWARE
+require("./config/config")();
+require("./db/db")();
+
+// MIDDLEWARE IMPORTS
+const helmet = require("helmet");
 const error = require('./middleware/error');
 
 // ROUTE IMPORTS
@@ -12,16 +14,6 @@ const customers = require("./routes/customers");
 const movies = require("./routes/movies");
 const rentals = require("./routes/rentals");
 const auth = require("./routes/auth");
-
-if(!config.get("jwtPrivateKey")) {
-    console.log("FATAL ERROR... jwtPrivateKey not set");
-    process.exit(1);
-}
-
-// CONNECT TO DB
-mongoose.connect("mongodb://127.0.0.1:27017/Vidly?directConnection=true")
-    .then(() => console.log("Connected to Vidly Db..."))
-    .catch(err => console.error("Error connecting to db: ", err));
 
 const app = express();
 
@@ -36,11 +28,11 @@ app.use('/api/movies', movies);
 app.use('/api/rentals', rentals);
 app.use('/api/auth', auth);
 
-// ERROR HANDLING MIDDLEWARE
+// EXPRESS ERROR HANDLING MIDDLEWARE
 app.use(error);
 
 // LISTENERS
 const port = process.env.PORT || 3000;
 
-app.listen(port, console.log(`Listening on port ${port}`));
+app.listen(port, logger.info(`Listening on port ${port}`));
 
