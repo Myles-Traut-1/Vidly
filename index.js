@@ -3,6 +3,9 @@ const express = require("express");
 const helmet = require("helmet");
 const mongoose = require('mongoose');
 
+// MIDDLEWARE
+const error = require('./middleware/error');
+
 // ROUTE IMPORTS
 const genres = require("./routes/genres");
 const customers = require("./routes/customers");
@@ -32,6 +35,9 @@ app.use('/api/customers', customers);
 app.use('/api/movies', movies);
 app.use('/api/rentals', rentals);
 app.use('/api/auth', auth);
+
+// ERROR HANDLING MIDDLEWARE
+app.use(error);
 
 // LISTENERS
 const port = process.env.PORT || 3000;
