@@ -6,7 +6,7 @@ const validators = {
     validateGenre(genre) {
     // VALIDATE INPUT. RETURN ERROR STATUS CODE AND MESSAGE IF INVALID INPUT AND EXIT
         const schema = {
-            name: Joi.string().min(3).required()
+            name: Joi.string().min(3).max(50).required()
         }
         return Joi.validate(genre, schema);
     }, 

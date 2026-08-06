@@ -1,0 +1,5 @@
+{
+    "name": "Vidly",
+    "jwtPrivateKey": "vidly_testPrivateKey",
+    "db" : "mongodb://127.0.0.1:27017/Vidly_Tests?directConnection=true"
+}

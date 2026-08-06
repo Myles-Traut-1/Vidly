@@ -1,5 +1,5 @@
 const winston = require("winston");
-require("winston-mongodb");
+// require("winston-mongodb");
 
 const logger = winston.createLogger({
   level: 'info',
@@ -24,12 +24,12 @@ const logger = winston.createLogger({
     }),
 
     // 3. MongoDB Transport - Added via the 'new' keyword
-    new winston.transports.MongoDB({
-      level: 'error', // Good practice: Only send errors to the DB to save space
-      db: 'mongodb://127.0.0.1:27017/Vidly?directConnection=true',
-      collection: 'logs', // Name of the collection in Vidly DB
-      tryReconnect: true
-    })
+    // new winston.transports.MongoDB({
+    //   level: 'error', // Good practice: Only send errors to the DB to save space
+    //   db: 'mongodb://127.0.0.1:27017/Vidly?directConnection=true',
+    //   collection: 'logs', // Name of the collection in Vidly DB
+    //   tryReconnect: true
+    // })
   ], 
   // FIX: Winston handles the process listeners and auto-exits cleanly for you!
   exceptionHandlers: [
