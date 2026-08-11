@@ -41,6 +41,16 @@ const validators = {
         return Joi.validate(rental, schema);
     },
 
+    validateReturn(res) {
+    // VALIDATE INPUT. RETURN ERROR STATUS CODE AND MESSAGE IF INVALID INPUT AND EXIT
+        const schema = {
+            customerId: Joi.objectId().required(),
+            movieId: Joi.objectId().required()
+        }
+        return Joi.validate(res, schema);
+    }, 
+
+
     validateRegistration(registration) {
         const schema = {
             name: Joi.string().min(3).max(50).required(),

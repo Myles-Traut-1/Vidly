@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 const rentalSchema = new mongoose.Schema({
     // CREATE CUSTOM SCHEMAS FOR CUSTOMER AND MOVIE TO ONLY STORE ESSENTIAL DATA
@@ -8,7 +9,7 @@ const rentalSchema = new mongoose.Schema({
             name: {
                 type: String,
                 required: true,
-                minLength: 3,
+                minLength: 5,
                 maxLength: 255,
                 trim: true
             },
@@ -55,6 +56,25 @@ const rentalSchema = new mongoose.Schema({
         min: 0
     }
 });
+
+// HERE WE INTRODUCE STATIC METHODS. 
+// A STATIC METHOD IS AVAILABLE ON A CLASS. IT IS GENERIC AND I SNOT APPLIED TO EACH UNIQUE INSTANCE
+// AN INSTANCE METHOD APPLIES TO A SPECIFIC INSTANCE OF A CLASS AND OPERATES ON THAT UNIQUE OBJECT. eg  new User().generateAuthToken()
+
+rentalSchema.statics.lookup = function(customerId, movieId) {
+    return this.findOne({
+        "customer._id": customerId, 
+        "movie._id": movieId
+    });
+}
+
+// THIS IS AN INSTANCE METHOD
+rentalSchema.methods.return = function() {
+    this.dateReturned = new Date();
+    
+    const rentalDays = moment().diff(this.dateOut, "days");   
+    this.rentalFee = this.movie.dailyRentalRate * rentalDays;
+}
 
 const Rental = mongoose.model("Rental", rentalSchema);
 

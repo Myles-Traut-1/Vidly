@@ -7,7 +7,7 @@ const { User } = require("../../../models/user");
 let server;
 
 describe("/api/genres", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         server = require("../../../index");
     });
     afterEach(async () => {

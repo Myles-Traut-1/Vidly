@@ -7,10 +7,11 @@ const { Genre } = require("../../../models/genre");
 let server;
 
 describe("Auth Middleware", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         server = require("../../../index");
         token = new User().generateAuthToken();
     });
+    
     afterEach(async () => {
         await Genre.deleteMany({});
         await server.close();
