@@ -167,6 +167,23 @@ describe("/api/returns", () => {
                 .toEqual(expect.arrayContaining(["rentalFee", "dateOut", "dateReturned", "customer", "movie"]));
 
         });
-        
+        it("should throw 500 status and not update on invalid input", async () => {
+            rental.dateOut = moment().add(-7, "days").toDate();
+            await rental.save();
+
+            jest.spyOn(Movie, "updateOne").mockImplementation(() => {
+                throw new Error("Simulated failure");
+            });
+
+            const res = await executeRequest(); // hits your route
+
+            expect(res.status).toBe(500);
+
+            const movieInDb = await Movie.findById(movie._id);
+            const rentalInDb = await Rental.findById(rental._id);
+
+            expect(movieInDb.numberInStock).toBe(movie.numberInStock);
+            expect(rentalInDb.rentalFee).toEqual(0);
+        });
     });
 });
