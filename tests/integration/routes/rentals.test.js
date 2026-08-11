@@ -21,13 +21,16 @@
  */
 
 const mongoose = require("mongoose");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const request = require("supertest");
+
 const { Rental } = require("../../../models/rentals");
 const { Movie } = require("../../../models/movies");
 const { User } = require("../../../models/user");
 const moment = require("moment");
 
 let server;
+let replset;
 
 describe("/api/returns", () => {
     let token;
@@ -44,9 +47,14 @@ describe("/api/returns", () => {
             .set('x-auth-token', token)
             .send(payload);
     }
+    beforeAll(async () => {
+        replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+        await mongoose.connect(replset.getUri());
+    });
 
     beforeEach(async () => {
         server = require("../../../index");
+
         customerId = new mongoose.Types.ObjectId();
         movieId = new mongoose.Types.ObjectId();
         
@@ -86,6 +94,8 @@ describe("/api/returns", () => {
 
     afterAll(async () => {
         await mongoose.disconnect();
+        await replset.stop();
+
     });
 
     describe("POST /", () => {

@@ -1,12 +1,19 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 
 const { Genre } = require("../../../models/genre");
 const { User } = require("../../../models/user");
 
 let server;
+let replset;
 
 describe("/api/genres", () => {
+     beforeAll(async () => {
+            replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+            await mongoose.connect(replset.getUri());
+        });
+
     beforeEach(async () => {
         server = require("../../../index");
     });
