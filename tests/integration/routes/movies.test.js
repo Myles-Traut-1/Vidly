@@ -96,6 +96,14 @@ describe("/api/movies", () => {
             return request(server).get(`/api/movies/${movieId}`)
         }
 
+        it("should return 400 status for invalid id", async () => {
+            movieId = "1";
+
+            const res = await executeRequest();
+
+            expect(res.status).toBe(400);
+            expect(res.error.text).toMatch(/invalid id/i)
+        });
         it("should return 404 status if movie not found", async () => {
             movieId = new mongoose.Types.ObjectId();
 

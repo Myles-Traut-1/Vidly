@@ -9,7 +9,9 @@ const { validateMovie, vaidateMovieDeletion } = require("../utils/utils");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const validateObjectId = require("../middleware/validateObjectId");
+const validate = require("../middleware/validate");
 
+/** ------ ROUTER ------ */
 const router = express.Router();
 
 /** ------ GET ROUTES ------ */
@@ -19,7 +21,7 @@ router.get('/', async (req, res) => {
     res.send(movies);
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectId, async (req, res) => {
     const movie = await Movie.findById(req.params.id);
     if(!movie) {
         return res.status(404).send("Movie not found!");
@@ -29,12 +31,7 @@ router.get('/:id', async (req, res) => {
 
 /** ------ POST ROUTES ------ */
 
-router.post('/', auth, async (req, res) => {
-    const { error } = validateMovie(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/', [auth, validate(validateMovie)], async (req, res) => {
     const genre = await Genre.findById(req.body.genreId);
     if(!genre) {
         return res.status(404).send("Genre not found!");
@@ -56,12 +53,7 @@ router.post('/', auth, async (req, res) => {
 
 /** ------ PUT ROUTES ------ */
 
-router.put('/:id', [auth, validateObjectId], async (req, res) => {
-    const { error } = validateMovie(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.put('/:id', [auth, validateObjectId, validate(validateMovie)], async (req, res) => {
     const genre = await Genre.findById(req.body.genreId);
     if(!genre) {
         return res.status(404).send("Genre not found!");
