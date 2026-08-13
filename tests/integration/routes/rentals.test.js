@@ -1,25 +1,3 @@
-/** TDD APPROACH */
-
-/** What is the contract we wish to create for teh client?
- * POST /returns {customerId, movieId}
- * Look up the above rental
- * add date returned
- * calculate the fee
- */
-
-/** TEST CASES
- * 1. should return 401 if not logged in
- * 2. should return 400 if invalid customerId
- * 3. should return 400 if invalid movieId
- * 4. should return 404 if rental not found
- * 5. should return 400 if rental already processed
- * 6. should return 200 for successful request
- * 7. should update the date returned in the db
- * 8. should update stock
- * 9. should calculate the rental fee <- (daily rental rate * (date returned - date taken out)
- * 10. should return the rental to the client 
- */
-
 const mongoose = require("mongoose");
 const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const request = require("supertest");

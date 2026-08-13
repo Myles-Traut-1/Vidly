@@ -32,6 +32,14 @@ const validators = {
         return Joi.validate(movie, schema);
     },
 
+    vaidateMovieDeletion(movieId) {
+        const schema = {
+            movieId: Joi.objectId().required()
+        }
+
+        return Joi.validate(movieId, schema);
+    },
+
     validateRental(rental) {
         const schema = {
             movieId: Joi.objectId().required(),

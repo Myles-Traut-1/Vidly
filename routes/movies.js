@@ -3,11 +3,12 @@ const express = require("express");
 
 const { Movie } = require("../models/movies");
 const { Genre } = require("../models/genre");
-const { validateMovie } = require("../utils/utils");
+const { validateMovie, vaidateMovieDeletion } = require("../utils/utils");
 
 /** ------ MIDDLEWARE ------ */
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const validateObjectId = require("../middleware/validateObjectId");
 
 const router = express.Router();
 
@@ -49,18 +50,14 @@ router.post('/', auth, async (req, res) => {
         dailyRentalRate: req.body.dailyRentalRate
     });
 
-    try{
-        await movie.save();
-        res.send(movie);
-    } catch (err) {
-        console.error("Database error...", err);
-    }
+    await movie.save();
+    res.send(movie);
 });
 
 /** ------ PUT ROUTES ------ */
 
-router.put('/:id', auth, async (req, res) => {
-    const { error } = validateMovieUpdate(req.body);
+router.put('/:id', [auth, validateObjectId], async (req, res) => {
+    const { error } = validateMovie(req.body);
     if(error) {
         return res.status(400).send(error.details[0].message);
     }
@@ -78,7 +75,7 @@ router.put('/:id', auth, async (req, res) => {
         },
         numberInStock: req.body.numberInStock,
         dailyRentalRate: req.body.dailyRentalRate
-    }, {new: true});
+    }, {returnDocument: "after"});
 
     if(!updatedMovie) {
         return res.status(404).send("Movie not found!");
@@ -89,7 +86,7 @@ router.put('/:id', auth, async (req, res) => {
 
 /** ------ DELETE ROUTES ------ */
 
-router.delete('/:id', [auth, admin], async (req, res) => {
+router.delete('/:id', [auth, admin, validateObjectId], async (req, res) => {
     const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
     if(!deletedMovie) {
         return res.status(404).send("Movie not found!");

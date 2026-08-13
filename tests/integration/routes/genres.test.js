@@ -9,14 +9,15 @@ let server;
 let replset;
 
 describe("/api/genres", () => {
-     beforeAll(async () => {
-            replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
-            await mongoose.connect(replset.getUri());
-        });
 
+    beforeAll(async () => {
+        replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+        await mongoose.connect(replset.getUri());
+    });
     beforeEach(async () => {
         server = require("../../../index");
     });
+    
     afterEach(async () => {
         await Genre.deleteMany({});
         await server.close();
