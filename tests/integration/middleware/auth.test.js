@@ -10,9 +10,9 @@ let replset;
 
 describe("Auth Middleware", () => {
     beforeAll(async () => {
-                replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
-                await mongoose.connect(replset.getUri());
-            });
+        replset = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+        await mongoose.connect(replset.getUri());
+    });
 
     beforeEach(async () => {
         server = require("../../../index");

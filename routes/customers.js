@@ -5,6 +5,7 @@ const { validateCustomer } = require("../utils/utils");
 /** ------ MIDDLEWARE ------ */
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const validateObjectId = require("../middleware/validateObjectId");
 
 const router = express.Router();
 
@@ -14,23 +15,18 @@ router.get('/', async (req, res) => {
     res.send(customers);
 });
 
-router.get('/:id', async (req, res) => {
-    try {
-        const customer = await Customer.findById(req.params.id);
+router.get('/:id', validateObjectId, async (req, res) => {
+    const customer = await Customer.findById(req.params.id);
 
-        if(!customer) {
-            return res.status(404).send("Customer not found!");
-        }
-
-        res.send(customer);
-    } catch(err) {
-        console.error("Database Error...", err);
+    if(!customer) {
+        return res.status(404).send("Customer not found!");
     }
+
+    res.send(customer);
 });
 
 /** -------- POST -------- */
 router.post('/', auth, async (req, res) => {
-
     const { error } = validateCustomer(req.body);
     if(error) {
         return res.status(400).send(error.details[0].message);
@@ -42,44 +38,33 @@ router.post('/', auth, async (req, res) => {
         isGold: req.body.isGold
     });
 
-    try {
-        await customer.save();
-        res.send(customer);
-    } catch(err) {
-        console.error("Database Error...", err);
-        res.status(500).send("Database Error...", err);
-    }
+    await customer.save();
+    res.send(customer);
 });
 
 /** ------ PUT ------ */
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', [auth, validateObjectId], async (req, res) => {
     const { error } = validateCustomer(req.body);
     if(error) {
         return res.status(400).send(error.details[0].message);
     }
 
-    try {
-        const updatedCustomer = await Customer.findByIdAndUpdate(req.params.id, {
-            $set : {
-                name: req.body.name,
-                phone: req.body.phone,
-                isGold: req.body.isGold
-            },
-        }, {new: true});
-        
-        if(!updatedCustomer) {
-            return res.status(404).send("Customer not found!");
-        }
-        res.send(updatedCustomer);
-
-    } catch (err) {
-        console.error("Database Error...", err);
-        res,status(500).send("Database Error...", err);
+    const updatedCustomer = await Customer.findByIdAndUpdate(req.params.id, {
+        $set : {
+            name: req.body.name,
+            phone: req.body.phone,
+            isGold: req.body.isGold
+        },
+    }, { returnDocument: 'after'});
+    
+    if(!updatedCustomer) {
+        return res.status(404).send("Customer not found!");
     }
+    res.send(updatedCustomer);
 });
 
 /** ------ DELETE ------ */
-router.delete('/:id', [auth,admin], async (req, res) => {
+router.delete('/:id', [auth, admin, validateObjectId], async (req, res) => {
     const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
     if(!deletedCustomer) {
         return res.status(404).send("Customer not found!");
