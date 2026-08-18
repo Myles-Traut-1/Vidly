@@ -5,8 +5,11 @@ const express = require("express");
 const { User } = require("../models/user");
 const { validateRegistration, validateLogin } = require("../utils/utils");
 
+/** ------ MIDDLEWARE ------ */
 const auth = require("../middleware/auth");
+const validate = require("../middleware/validate");
 
+/** ------ ROUTER ------ */
 const router = express.Router();
 
 /** ------ GET ROUTES ------*/
@@ -22,12 +25,7 @@ router.get('/me', auth, async (req, res) => {
 
 /** ------ POST ROUTES ------ */
 
-router.post('/register', async (req, res) => {
-    const { error } = validateRegistration(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/register', validate(validateRegistration), async (req, res) => {
     let user = await User.findOne({email: req.body.email});
     if(user) {
         return res.status(400).send("User already registered");
@@ -47,12 +45,7 @@ router.post('/register', async (req, res) => {
     res.header("x-auth-token", token).send(_.pick(user, ["_id", "name", "email"]));
 });
 
-router.post('/login', async (req, res) => {
-    const { error } = validateLogin(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/login', validate(validateLogin), async (req, res) => {
     let user = await User.findOne({email: req.body.email});
     if(!user) {
         return res.status(400).send("Invalid email or password");
