@@ -10,6 +10,7 @@ const { validateRental } = require("../utils/utils");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const validateObjectId = require("../middleware/validateObjectId");
+const validate = require("../middleware/validate");
 
 /** ------ ROUTER ------ */
 
@@ -32,12 +33,7 @@ router.get('/:id', validateObjectId, async (req, res) => {
 
 /** ------ POST ROUTES ------ */
 
-router.post('/' , auth, async (req, res) => {
-    const { error } = validateRental(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/' , [auth, validate(validateRental)], async (req, res) => {
     const customer = await Customer.findById(req.body.customerId);
     if(!customer) {
         return res.status(404).send("Customer not found!");
