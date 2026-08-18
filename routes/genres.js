@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const validateObjectId = require("../middleware/validateObjectId");
+const validate = require("../middleware/validate");
 
 /** ------ CREATE ROUTER ------ */
 const router = express.Router();
@@ -14,15 +15,10 @@ const router = express.Router();
 /** ------ GET ROUTES ------ */
 router.get('/', async (req, res) => {
     const genres = await Genre.find();
-    // if(genres.length === 0) {
-    //     return res.status(404).send("No Genres Found!");
-    // }
     res.send(genres);
 });
 
 router.get('/:id', validateObjectId, async (req, res) => {
-    // FIND THE GENRE
-    // IF NOT EXISTS RETURN NOT FOUND STATUS AND EXIT
     const genre = await Genre.findById(req.params.id);
     if(!genre) {
         return res.status(404).send("Genre Not Found!");
@@ -33,12 +29,7 @@ router.get('/:id', validateObjectId, async (req, res) => {
 /** ------ POST ROUTES ------ */
 
 // YOU MAY ADD A MUIDDLEWARE FUNCTION AS AN OPTIONAL SECOND ARG: IN THIS CASE, AUTH
-router.post('/', auth, async (req, res) => {
-    const { error } = validateGenre(req.body);
-    if( error ) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/', [auth, validate(validateGenre)], async (req, res) => {
     const genre = new Genre({
         name: (req.body.name).toLowerCase()
     });
@@ -48,19 +39,14 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT ROUTES
-router.put('/:id', [auth, validateObjectId], async (req, res) => {
-    const { error } = validateGenre(req.body);
-    if( error ) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.put('/:id', [auth, validateObjectId, validate(validateGenre)], async (req, res) => {
     const genre = await Genre.findByIdAndUpdate(
         req.params.id,
         {$set : {
                 name: (req.body.name).toLowerCase()
             }
         },
-        {new: true}
+        {returnDocument: 'after'}
     );
 
     if(!genre) {

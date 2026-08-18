@@ -6,6 +6,7 @@ const { validateCustomer } = require("../utils/utils");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const validateObjectId = require("../middleware/validateObjectId");
+const validate = require("../middleware/validate");
 
 const router = express.Router();
 
@@ -26,12 +27,7 @@ router.get('/:id', validateObjectId, async (req, res) => {
 });
 
 /** -------- POST -------- */
-router.post('/', auth, async (req, res) => {
-    const { error } = validateCustomer(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.post('/', [auth, validate(validateCustomer)], async (req, res) => {
     const customer = new Customer({
         name: req.body.name,
         phone: req.body.phone,
@@ -43,12 +39,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 /** ------ PUT ------ */
-router.put('/:id', [auth, validateObjectId], async (req, res) => {
-    const { error } = validateCustomer(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
-
+router.put('/:id', [auth, validateObjectId, validate(validateCustomer)], async (req, res) => {
     const updatedCustomer = await Customer.findByIdAndUpdate(req.params.id, {
         $set : {
             name: req.body.name,
