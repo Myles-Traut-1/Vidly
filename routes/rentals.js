@@ -9,6 +9,7 @@ const { validateRental } = require("../utils/utils");
 /** ------ MIDDLEWARE ------ */
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const validateObjectId = require("../middleware/validateObjectId");
 
 /** ------ ROUTER ------ */
 
@@ -21,7 +22,7 @@ router.get('/', async (req, res) => {
     res.send(rentals);
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectId, async (req, res) => {
     const rental = await Rental.findById(req.params.id);
     if(!rental) {
         return res.status(404).send("Rental not found!");
@@ -86,8 +87,8 @@ router.post('/' , auth, async (req, res) => {
         });
 
         if(!updatedMovie) {
-            session.abortTransaction();
-            return res.status(404).send("Movie not foundor out of stock");
+            await session.abortTransaction();
+            return res.status(404).send("Movie not found or out of stock");
         }
 
         // Now create the new rental object
@@ -124,7 +125,7 @@ router.post('/' , auth, async (req, res) => {
 
 /** ------ DELETE ROUTE ------ */
 
-router.delete('/:id', [auth, admin], async (req, res) => {
+router.delete('/:id', [auth, admin, validateObjectId], async (req, res) => {
     const deletedRental = await Rental.findByIdAndDelete(req.params.id);
     if(!deletedRental) {
         return res.status(404).send("Rental not found!");

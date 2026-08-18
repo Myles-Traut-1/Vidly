@@ -199,8 +199,6 @@ describe("/api/customers/", () => {
             customerId = "1";
             const res = await executeRequest();
 
-            console.log(res.status);
-
             expect(res.status).toBe(400);
             expect(res.error.text).toMatch(/invalid id/i)
         });
